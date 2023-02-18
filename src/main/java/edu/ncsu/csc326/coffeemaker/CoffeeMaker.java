@@ -26,6 +26,7 @@ public class CoffeeMaker {
     private Inventory inventory;
 	
     /**
+     * hola
      * Constructor for the coffee maker
      *
      */
