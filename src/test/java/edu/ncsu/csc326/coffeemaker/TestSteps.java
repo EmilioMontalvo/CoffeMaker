@@ -20,7 +20,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import edu.ncsu.csc326.coffeemaker.CoffeeMaker;
+import edu.ncsu.csc326.coffeemaker.UICmd.CheckInventory;
+import edu.ncsu.csc326.coffeemaker.UICmd.ChooseRecipe;
+import edu.ncsu.csc326.coffeemaker.UICmd.ChooseService;
+import edu.ncsu.csc326.coffeemaker.UICmd.Command;
+import edu.ncsu.csc326.coffeemaker.UICmd.DescribeRecipe;
+import edu.ncsu.csc326.coffeemaker.exceptions.RecipeException;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Contains the step definitions for the cucumber tests.  This parses the 
@@ -36,12 +47,18 @@ public class TestSteps {
 	private CoffeeMakerUI coffeeMakerMain; 
 	private CoffeeMaker coffeeMaker;
 	private RecipeBook recipeBook;
+        private int selectedRecipeIndex;
+        
+        private Recipe recipeAux;
 
 	
 	private void initialize() {
 		recipeBook = new RecipeBook();
 		coffeeMaker = new CoffeeMaker(recipeBook, new Inventory());
 		coffeeMakerMain = new CoffeeMakerUI(coffeeMaker);
+                selectedRecipeIndex=-1;
+                recipeAux=null;
+                
 	}
 	
     @Given("an empty recipe book")
@@ -105,5 +122,79 @@ public class TestSteps {
 		recipeBook.addRecipe(recipe4);
 		
 	}
+        
+    @Given("I selected the option {int}")
+    public void i_selected_the_option(Integer int1) {
+        Command command=new ChooseService(int1);
+        coffeeMakerMain.UI_Input(command);
+    }
+        
+    @When("I select the recipe {int} to edit")
+    public void i_select_the_recipe_to_edit(Integer int1) {
+        
+        Command command=new ChooseRecipe(int1);
+        coffeeMakerMain.UI_Input(command);
+        selectedRecipeIndex=int1;
+    }
+    
+    @When("I enter the new recipe new price {string} coffe units {string} sugar units {string} milk units {string} and {string} chocolate units")
+    public void i_enter_the_new_recipe_new_price_coffe_units_sugar_units_milk_units_and_chocolate_units(String price, String coffeUnits, String sugarUnits, String milkUnits, String chocolateUnits){
+        
+           
+            try {
+                recipeAux=new Recipe();
+                recipeAux.setName("Edicion");
+                recipeAux.setPrice(price);
+                recipeAux.setAmtCoffee(coffeUnits);
+                recipeAux.setAmtSugar(sugarUnits);
+                recipeAux.setAmtMilk(milkUnits);
+                recipeAux.setAmtChocolate(chocolateUnits);
+            } catch (RecipeException ex) {
+                Logger.getLogger(TestSteps.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        
+       
+        
+        Command command=new DescribeRecipe(recipeAux);
+        coffeeMakerMain.UI_Input( command);
+        
+        
+    }
+    
+    @When("I check the inventory")
+    public void i_check_the_inventory() {
+        Command command=new CheckInventory();
+        coffeeMakerMain.UI_Input(command);
+    }
+    
+
+    
+    @Then("the recipe {int} called {string} is modified")
+    public void the_recipe_called_is_modified(Integer int1, String string) {
+        Recipe actual=coffeeMakerMain.getRecipes()[int1];
+        
+        assertEquals(string,actual.getName());
+        assertEquals(recipeAux.getPrice(), actual.getPrice());
+        assertEquals(recipeAux.getAmtCoffee(), actual.getAmtCoffee());
+        assertEquals(recipeAux.getAmtSugar(), actual.getAmtSugar());
+        assertEquals(recipeAux.getAmtMilk(), actual.getAmtMilk());
+        assertEquals(recipeAux.getAmtChocolate(), actual.getAmtChocolate());
+        
+        
+    }
+    
+    @Then("the status is {string}")
+    public void the_status_is(String string) {
+        assertEquals(string,coffeeMakerMain.getStatus().toString());
+    }
+    @Then("the mode result is {string}")
+    public void the_mode_result_is(String string) {
+        assertEquals(string,coffeeMakerMain.getMode().toString());
+    }
+    @Then("the inventory results are {string} coffe units {string} sugar units {string} milk units and {string} chocolate units")
+    public void the_inventory_results_are_coffe_units_sugar_units_milk_units_and_chocolate_units(String coffe, String sugar, String milk, String chocolate) {
+        assertEquals("Coffee: " + coffe +"\nMilk: " + milk + "\nSugar: " + sugar + "\nChocolate: " + chocolate + "\n", coffeeMaker.checkInventory());
+    }
+
     
 }
