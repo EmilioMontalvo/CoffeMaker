@@ -27,9 +27,19 @@ Scenario: Waiting State
       You might also want to try a couple of exceptional values to see what the 
       Coffee Maker does.
       
-   Given a default recipe book
-   # add more here!   
-   
+    Given a default recipe book
+    When the user presses <number>
+    Then the mode is <mode>
+    Examples
+    | number | mode                 |
+    | 1      | "ADD_RECIPE"         |
+    | 2      | "DELETE_RECIPE"      |
+    | 3      | "EDIT_RECIPE"        |
+    | 4      | "ADD_INVENTORY"      |
+    | 5      | "CHECK_INVENTORY"    |
+    | 6      | "PURCHASE_BEVERAGE"  |
+    | 7      | "WAITING"            |
+    
 Scenario: Add a Recipe
       Priority: 1 Story Points: 2
 
@@ -42,9 +52,57 @@ Scenario: Add a Recipe
       For this scenario, you should try to add a recipe to the recipe book, and check to
       see whether the coffee maker returns to the Waiting state.  
       
-   Given an empty recipe book
-   # add more here!   
-   
+    Given an empty recipe book
+    When I add a recipe
+    Then the status is "OK"
+    And the mode result is "WAITING"
+    And the number of recipes is 1
+
+Scenario: Test Add four recipes
+    Given an empty recipe book
+    When I add four recipes
+    Then the status is "RECIPE_NOT_ADDED"
+    And the mode result is "WAITING"
+    And the number of recipes is 3
+
+Scenario: Test Add a recipe with no data being filled in
+    Given an empty recipe book
+    When I add a recipe with nothing filled in
+    Then the status is "RECIPE_NOT_ADDED"
+    And the mode result is "WAITING"
+
+Scenario: Test Add a Recipe (wrong price)
+    Given an empty recipe book
+    When the mode result is "ADD_RECIPE"
+    And I add name "Mocha" price "10" coffee units 20 sugar units 40 milk units 20 and 30 chocolate units 
+    Then the status is "RECIPE_NOT_ADDED"
+    And the number of recipes is 0
+    And the mode result is "WAITING"
+
+Scenario: Test Add a Recipe (wrong the units of coffee, sugar, milk, and chocolate)
+    Given an empty recipe book
+    When the mode result is "ADD_RECIPE"
+    And I add name "Mocha" price 10 coffee units "20" sugar units "40" milk units "20" and "30" chocolate units 
+    Then the status is "RECIPE_NOT_ADDED"
+    And the number of recipes is 0
+    And the mode result is "WAITING"
+
+Scenario: Test Add a Recipe (negative numbers)
+    Given an empty recipe book
+    When the mode result is "ADD_RECIPE"
+    And I add name "Mocha" price -10 coffee units -20 sugar units -40 milk units -20 and -30 chocolate units 
+    Then the status is "RECIPE_NOT_ADDED"
+    And the number of recipes is 0
+    And the mode result is "WAITING"
+
+Scenario: Test Add a Recipe (name exists)
+    Given a default recipe book
+    When the mode result is "ADD_RECIPE"
+    And I add name "Mocha" price 10 coffee units 20 sugar units 40 milk units 20 and 30 chocolate units 
+    And name already exists
+    Then the status is "RECIPE_NOT_ADDED"
+    And the mode result is "WAITING"
+
 Scenario: Delete a Recipe
       Priority: 2 Story Points: 1
 
@@ -52,9 +110,49 @@ Scenario: Delete a Recipe
       CoffeeMaker. The recipes are listed by their name. Upon completion, a status message is
       printed and the Coffee Maker is returned to the waiting state.  
 
-   Given a default recipe book
-   # add more here!   
-   
+    Given a default recipe book
+    When I delete recipe 0
+    Then the status is "OK"
+    And the mode result is "WAITING"
+    And the number of recipes is 2
+ 
+Scenario: Delete a Recipe (out of bounds)
+    Given a default recipe book
+    When I delete recipe 4
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
+    And the number of recipes is 3
+
+Scenario: Delete a Recipe (alphabetic character)
+    Given a default recipe book
+    When I delete recipe "a"
+    Then the mode result is "WAITING"
+    And the number of recipes is 3
+
+Scenario: Delete a Recipe (empty recipe)
+    Given a default recipe book
+    When I delete recipe 2
+    And recipe 2 is empty
+    Then the mode result is "WAITING"
+    And the number of recipes is 2
+
+Scenario: Delete the same recipe twice
+    Given an empty recipe book
+    When I delete the same recipe twice
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
+
+Scenario: Delete a recipe with a negative range
+    Given a default recipe book
+    When I delete a negative recipe
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
+
+Scenario: Delete a recipe when no reipes
+    Given an empty recipe book
+    When I delete recipe 0
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
 
 Scenario: Edit a Recipe
       Priority: 2 Story Points: 1
@@ -83,10 +181,25 @@ Scenario: Add Inventory
       may only be removed from the CoffeeMaker by purchasing a beverage. Upon completion, a
       status message is printed and the CoffeeMaker is returned to the waiting state.   
       
-   Given a default recipe book
-   # add more here!   
-    
-   
+    Given a default recipe book
+    When I add 1 coffee, 2 milk, 3 sugar, 4 chocolate
+    Then the inventory results are 16 coffee, 17 milk, 18 sugar, 19 chocolate
+    And the status is "OK"
+    And the mode result is "WAITING"
+
+Scenario: Add Inventory with 0 sugar
+    Given a default recipe book
+    When I add 1 coffee, 2 milk, 0 sugar, 4 chocolate
+    Then the inventory results are 16 coffee, 17 milk, 15 sugar, 19 chocolate
+    And the status is "OK"
+    And the mode result is "WAITING"
+
+Scenario: Add Inventory with number that is negative, a non-Integer or alphabetic character
+    Given a default recipe book
+    When I add -1 coffee, 2.1 milk, "a" sugar, 4 chocolate
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
+
 Scenario: Check Inventory 
       Priority: 2 Story Points: 1
 
@@ -96,7 +209,7 @@ Scenario: Check Inventory
    Given a default recipe book
    And I selected the option 5  
    When I check the inventory
-   Then the inventory results are "15" coffe units "15" sugar units "15" milk units and "15" chocolate units 
+   Then the inventory results are "15" coffee units "15" sugar units "15" milk units and "15" chocolate units 
    And the status is "OK"
    And the mode result is "WAITING" 
    
@@ -111,8 +224,81 @@ Scenario: Purchase Beverage
       completion, the Coffee Maker displays a message about the purchase status and is
       returned to the main menu.  
       
-   Given a default recipe book
-   # add more here!   
+    Given a default recipe book
+    When I insert 60
+    And purchases recipe 0
+    Then the status is "OK"
+    And the mode result is "WAITING"
+    And the money in tray is 10
+    And the money inserted is 0
+    And the inventory results are 12 coffee, 14 milk, 14 sugar, 15 chocolate
+
+Scenario: Order a beverage where the amount = price
+    Given a default recipe book
+    When I insert 100
+    And purchases recipe 2
+    Then the status is "OK"
+    And the mode result is "WAITING"
+    And the money in tray is 0
+    And the money inserted is 0
+    And the inventory results are 12 coffee, 12 milk, 14 sugar, 15 chocolate
+
+Scenario: Order a beverage where the amount < price
+    Given a default recipe book
+    When I insert 80
+    And purchases recipe 2
+    Then the status is "INSUFFICIENT_FUNDS"
+    And the mode result is "WAITING"
+    And the money in tray is 0
+    And the money inserted is 80
+    And the inventory results are 15 coffee, 15 milk, 15 sugar, 15 chocolate
+
+Scenario: Order a beverage where the inventory is too low
+    Given a default recipe book
+    When I insert 75
+    And purchases recipe 1
+    Then the status is "INSUFFICIENT_FUNDS"
+    And the mode result is "WAITING"
+    And the money in tray is 0
+    And the money inserted is 75
+    And the inventory results are 15 coffee, 15 milk, 15 sugar, 15 chocolate
+
+Scenario: Purchase a beverage and take money from the tray
+    Given a default recipe book
+    When I insert 60
+    And purchases recipe 0
+    And takes money from the tray
+    Then the status is "OK"
+    And the mode result is "WAITING"
+    And the money in tray is 0
+
+Scenario: Order a beverage with negative range
+    Given a default recipe book
+    When I insert 75
+    And purchases a negative recipe
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
+
+Scenario: Order a beverage out of range
+    Given a default recipe book
+    When I insert 75
+    And purchases recipe 6
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
+
+Scenario: Order a beverage when no recipes
+    Given a empty recipe book
+    When I insert 75
+    And purchases recipe 0
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
+
+Scenario: Order a beverage where the price is negative
+    Given a default recipe book
+    When I insert -80
+    And purchases recipe 6
+    Then the status is "OUT_OF_RANGE"
+    And the mode result is "WAITING"
 
 
 # Add scenarios from the Use Cases here.  These can be Cucumber versions of the unit 
@@ -133,7 +319,7 @@ Scenario: Edit a recipe and inserts a alphabetic character
     Given a default recipe book
     And I selected the option 3
     When I select the recipe 1 to edit
-    And I enter the new recipe new price "12" coffe units "four" sugar units "40" milk units "20" and "30" chocolate units 
+    And I enter the new recipe new price "12" coffee units "four" sugar units "40" milk units "20" and "30" chocolate units 
     Then the status is "RECIPE_NOT_ADDED"
     And the mode result is "WAITING"
 
@@ -141,7 +327,7 @@ Scenario: Edit a recipe and insert a price that is not a number
     Given a default recipe book
     And I selected the option 3
     When I select the recipe 1 to edit
-    And I enter the new recipe new price "ASD" coffe units "12" sugar units "40" milk units "20" and "30" chocolate units 
+    And I enter the new recipe new price "ASD" coffee units "12" sugar units "40" milk units "20" and "30" chocolate units 
     Then the status is "RECIPE_NOT_ADDED"
     And the mode result is "WAITING"
 
@@ -149,7 +335,7 @@ Scenario: Edit a recipe and insert a unit that is not a integer
     Given a default recipe book
     And I selected the option 3
     When I select the recipe 1 to edit
-    And I enter the new recipe new price "44" coffe units "12.55" sugar units "40.5" milk units "20.5" and "30.5" chocolate units 
+    And I enter the new recipe new price "44" coffee units "12.55" sugar units "40.5" milk units "20.5" and "30.5" chocolate units 
     Then the status is "RECIPE_NOT_ADDED"
     And the mode result is "WAITING"
 
@@ -157,7 +343,7 @@ Scenario: Edit a recipe and insert a negative price
     Given a default recipe book
     And I selected the option 3
     When I select the recipe 1 to edit
-    And I enter the new recipe new price "-44" coffe units "12" sugar units "40" milk units "20" and "30" chocolate units 
+    And I enter the new recipe new price "-44" coffee units "12" sugar units "40" milk units "20" and "30" chocolate units 
     Then the status is "RECIPE_NOT_ADDED"
     And the mode result is "WAITING"
 
