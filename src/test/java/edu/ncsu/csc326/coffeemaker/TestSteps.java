@@ -137,9 +137,9 @@ public class TestSteps {
         coffeeMakerMain.UI_Input(command);
         selectedRecipeIndex = int1;
     }
-
-    @When("I enter the new recipe new price {string} coffe units {string} sugar units {string} milk units {string} and {string} chocolate units")
-    public void i_enter_the_new_recipe_new_price_coffe_units_sugar_units_milk_units_and_chocolate_units(String price, String coffeUnits, String sugarUnits, String milkUnits, String chocolateUnits) {
+    
+   @When("I enter the new recipe new price {string} coffee units {string} sugar units {string} milk units {string} and {string} chocolate units")
+    public void i_enter_the_new_recipe_new_price_coffee_units_sugar_units_milk_units_and_chocolate_units(String price, String coffeUnits, String sugarUnits, String milkUnits, String chocolateUnits) {
 
         try {
             recipeAux = new Recipe();
@@ -219,18 +219,17 @@ public class TestSteps {
         coffeeMakerMain.UI_Input(cmd2);
         Command cmd = new DescribeRecipe(recipe1);
         coffeeMakerMain.UI_Input(cmd);
-        System.out.println("the status is " + coffeeMakerMain.getStatus());
-        coffeeMakerMain.displayRecipes();
+        
     }
 
     @When("I delete recipe {int}")
     public void i_delete_recipe(int numberRecipe) {
-        // Write code here that turns the phrase above into concrete actions
+       
         Command cmd = new ChooseService(2);
         coffeeMakerMain.UI_Input(cmd);
         Command cmd2 = new ChooseService(numberRecipe);
         coffeeMakerMain.UI_Input(cmd2);
-        coffeeMakerMain.displayRecipes();
+        
     }
 
     @Then("the number of recipes is {int}")
@@ -322,9 +321,9 @@ public class TestSteps {
         Command cmd = new DescribeRecipe(recipe4);
         coffeeMakerMain.UI_Input(cmd);
 
-        System.out.println("the status is " + coffeeMakerMain.getStatus());
+        
 
-        coffeeMakerMain.displayRecipes();
+        
 
     }
 

@@ -83,7 +83,7 @@ Scenario: Edit a Recipe
    Given a default recipe book
    And I selected the option 3
    When I select the recipe 1 to edit
-   And I enter the new recipe new price "34" coffe units "20" sugar units "40" milk units "20" and "30" chocolate units 
+   And I enter the new recipe new price "34" coffee units "20" sugar units "40" milk units "20" and "30" chocolate units 
    Then the recipe 1 called "Mocha" is modified
    And the status is "OK"
    And the mode result is "WAITING"
