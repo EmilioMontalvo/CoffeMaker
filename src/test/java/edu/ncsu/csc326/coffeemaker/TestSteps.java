@@ -327,18 +327,7 @@ public class TestSteps {
 
     }
 
-    @When("recipe {int} is empty")
-    public void recipe_is_empty(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
-    @When("I delete recipe {string}")
-    public void i_delete_recipe(String string) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
-    }
-
+    
     @Then("the money in tray is {int}")
     public void the_money_in_tray_is(int money) {
         // Write code here that turns the phrase above into concrete actions

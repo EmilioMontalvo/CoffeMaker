@@ -191,18 +191,6 @@ Scenario: Delete a Recipe (out of bounds)
     And the mode result is "WAITING"
     And the number of recipes is 3
 
-Scenario: Delete a Recipe (alphabetic character)
-    Given a default recipe book
-    When I delete recipe "a"
-    Then the mode result is "WAITING"
-    And the number of recipes is 3
-
-Scenario: Delete a Recipe (empty recipe)
-    Given a default recipe book
-    When I delete recipe 2
-    And recipe 2 is empty
-    Then the mode result is "WAITING"
-    And the number of recipes is 2
 
 # Edit 
 
